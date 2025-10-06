@@ -1,12 +1,67 @@
-// This is a placeholder file which shows how you can access functions defined in other files.
-// It can be loaded into index.html.
-// You can delete the contents of the file once you have understood how it works.
-// Note that when running locally, in order to open a web page which uses modules, you must serve the directory over HTTP e.g. with https://www.npmjs.com/package/http-server
-// You can't open the index.html file using a file:// URL.
-
+import { getData, addData } from "./storage.mjs";
 import { getUserIds } from "./common.mjs";
 
+let userDropdown;
+let agendaDisplay;
+let addTopicForm;
+let topicNameInput;
+let startDateInput;
+
+// Currently selected user
+let currentUser = "";
+
+// Set date picker to today's date
+function setDefaultDate() {
+  const today = new Date();
+  const formattedDate = today.toISOString().split("T")[0];
+  startDateInput.value = formattedDate;
+}
+
+function handleUserChange(event) {
+  currentUser = event.target.value;
+
+  if (!currentUser) {
+    agendaDisplay.innerHTML =
+      "<p>Please select a user to view their agenda.</p>";
+    return;
+  }
+
+  displayAgenda(currentUser);
+}
+
+function displayAgenda(userId) {
+  const userData = getData(userId);
+
+  if (!userData || userData.length === 0) {
+    agendaDisplay.innerHTML =
+      "<p>No agenda items yet. Add a topic to get started!</p>";
+    return;
+  }
+}
+
+// Populate user dropdown with user IDs
+function populateUserDropdown() {
+  const userIds = getUserIds();
+
+  // Clear existing options except the first placeholder
+  userDropdown.innerHTML = '<option value=""> Choose a user </option>';
+
+  // Add options for each user
+  userIds.forEach((userId) => {
+    const option = document.createElement("option");
+    option.value = userId;
+    option.textContent = `User ${userId}`;
+    userDropdown.appendChild(option);
+  });
+}
+
 window.onload = function () {
-  const users = getUserIds();
-  document.querySelector("body").innerText = `There are ${users.length} users`;
+  //get dom elements
+  userDropdown = document.getElementById("user-dropdown");
+  agendaDisplay = document.getElementById("agenda-display");
+  addTopicForm = document.getElementById("add-topic-form");
+  topicNameInput = document.getElementById("topic-name");
+  startDateInput = document.getElementById("start-date");
+
+  populateUserDropdown();
 };

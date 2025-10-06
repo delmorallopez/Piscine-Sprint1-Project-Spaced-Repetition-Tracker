@@ -1,0 +1,24 @@
+{
+  "name": "piscine-sprint1-project-spaced-repetition-tracker",
+  "version": "1.0.0",
+  "description": "At Code Your Future, we like to use a learning technique called spaced repetition. The technique involves reviewing a topic over increasing time gaps (e.g. after one week, one month, three months, six months, one year).",
+  "main": "index.js",
+  "scripts": {
+    "start": "http-server . -c-1 -p 8080",
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/delmorallopez/Piscine-Sprint1-Project-Spaced-Repetition-Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/delmorallopez/Piscine-Sprint1-Project-Spaced-Repetition-Tracker/issues"
+  },
+  "homepage": "https://github.com/delmorallopez/Piscine-Sprint1-Project-Spaced-Repetition-Tracker#readme",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
