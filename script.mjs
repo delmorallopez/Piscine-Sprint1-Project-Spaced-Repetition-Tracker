@@ -34,7 +34,7 @@ function handleUserChange(event) {
   displayAgenda(currentUser);
 }
 
-// Display agenda for a user
+// Display agenda for a user in chronological order
 function displayAgenda(userId) {
   const userData = getData(userId);
 
@@ -44,9 +44,18 @@ function displayAgenda(userId) {
     return;
   }
 
+  // Sort topics by startDate (earliest first)
+  const sortedData = userData.slice().sort((a, b) => {
+    // Convert date strings to Date objects for comparison
+    const dateA = new Date(a.startDate);
+    const dateB = new Date(b.startDate);
+    return dateA - dateB; // ascending order
+  });
+
+  // Render sorted agenda
   agendaDisplay.innerHTML = `
     <ul>
-      ${userData
+      ${sortedData
         .map(
           (item) =>
             `<li>${item.topicName} – ${item.startDate}</li>`
@@ -55,6 +64,7 @@ function displayAgenda(userId) {
     </ul>
   `;
 }
+
 
 // Populate user dropdown
 function populateUserDropdown() {
