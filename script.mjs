@@ -1,6 +1,7 @@
 import { getData, addData } from "./storage.mjs";
 import { getUserIds } from "./common.mjs";
 
+// DOM elements
 let userDropdown;
 let agendaDisplay;
 let addTopicForm;
@@ -18,13 +19,14 @@ function setDefaultDate() {
   startDateInput.value = formattedDate;
 }
 
+// Handle user selection change
 function handleUserChange(event) {
   currentUser = event.target.value;
 
   if (!currentUser) {
+    mainContent.style.display = "none"; // hide when no user selected
     agendaDisplay.innerHTML =
       "<p>Please select a user to view their agenda.</p>";
-    mainContent.style.display = "none"; // hide when no user selected
     return;
   }
 
@@ -32,6 +34,7 @@ function handleUserChange(event) {
   displayAgenda(currentUser);
 }
 
+// Display agenda for a user
 function displayAgenda(userId) {
   const userData = getData(userId);
 
@@ -41,15 +44,19 @@ function displayAgenda(userId) {
     return;
   }
 
-  // Example: render topics
   agendaDisplay.innerHTML = `
     <ul>
-      ${userData.map((item) => `<li>${item.topicName} – ${item.startDate}</li>`).join("")}
+      ${userData
+        .map(
+          (item) =>
+            `<li>${item.topicName} – ${item.startDate}</li>`
+        )
+        .join("")}
     </ul>
   `;
 }
 
-// Populate user dropdown with user IDs
+// Populate user dropdown
 function populateUserDropdown() {
   const userIds = getUserIds();
 
@@ -63,8 +70,9 @@ function populateUserDropdown() {
   });
 }
 
+// Initialize everything once DOM is loaded
 window.onload = function () {
-  // get DOM elements
+  // Get DOM elements
   userDropdown = document.getElementById("user-dropdown");
   agendaDisplay = document.getElementById("agenda-display");
   addTopicForm = document.getElementById("add-topic-form");
@@ -72,8 +80,37 @@ window.onload = function () {
   startDateInput = document.getElementById("start-date");
   mainContent = document.getElementById("main-content");
 
+  // Populate dropdown & set default date
   populateUserDropdown();
   setDefaultDate();
 
+  // Event listeners
   userDropdown.addEventListener("change", handleUserChange);
+
+  addTopicForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (!currentUser) {
+      alert("Please select a user before adding topics.");
+      return;
+    }
+
+    const topicName = topicNameInput.value.trim();
+    const startDate = startDateInput.value;
+
+    if (!topicName || !startDate) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const newTopic = { topicName, startDate };
+    addData(currentUser, newTopic);
+
+    // Clear form and reset date
+    topicNameInput.value = "";
+    setDefaultDate();
+
+    // Refresh agenda
+    displayAgenda(currentUser);
+  });
 };
