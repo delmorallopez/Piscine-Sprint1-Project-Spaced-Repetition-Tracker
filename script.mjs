@@ -68,7 +68,8 @@ function displayAgenda(userId) {
 
   // Show message if all revisions are in the past
   if (allRevisions.length === 0) {
-    agendaDisplay.innerHTML = "<p>All revisions for this user are in the past.</p>";
+    agendaDisplay.innerHTML =
+      "<p>All revisions for this user are in the past.</p>";
     return;
   }
 
@@ -91,11 +92,31 @@ function calculateRevisionDates(startDateStr) {
 
   // Return future spaced-repetition dates
   return [
-    new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 7), // +1 week
-    new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()), // +1 month
-    new Date(startDate.getFullYear(), startDate.getMonth() + 3, startDate.getDate()), // +3 months
-    new Date(startDate.getFullYear(), startDate.getMonth() + 6, startDate.getDate()), // +6 months
-    new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate()), // +1 year
+    new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate() + 7
+    ), // +1 week
+    new Date(
+      startDate.getFullYear(),
+      startDate.getMonth() + 1,
+      startDate.getDate()
+    ), // +1 month
+    new Date(
+      startDate.getFullYear(),
+      startDate.getMonth() + 3,
+      startDate.getDate()
+    ), // +3 months
+    new Date(
+      startDate.getFullYear(),
+      startDate.getMonth() + 6,
+      startDate.getDate()
+    ), // +6 months
+    new Date(
+      startDate.getFullYear() + 1,
+      startDate.getMonth(),
+      startDate.getDate()
+    ), // +1 year
   ];
 }
 
@@ -114,9 +135,6 @@ function formatDateWithSuffix(dateInput) {
 
   return `${day}${suffix} ${month} ${year}`;
 }
-
-
-
 
 // Populate user dropdown
 function populateUserDropdown() {
@@ -146,7 +164,7 @@ clearButton.addEventListener("click", () => {
 
   if (!confirmClear) return;
 
-  clearData(currentUser);  // <-- removes user's stored data
+  clearData(currentUser); // <-- removes user's stored data
   displayAgenda(currentUser); // refresh agenda display
   alert("Agenda cleared!");
 });
@@ -160,6 +178,7 @@ window.onload = function () {
   topicNameInput = document.getElementById("topic-name");
   startDateInput = document.getElementById("start-date");
   mainContent = document.getElementById("main-content");
+  mainContent.style.display = "none";
 
   // Populate dropdown & set default date
   populateUserDropdown();
