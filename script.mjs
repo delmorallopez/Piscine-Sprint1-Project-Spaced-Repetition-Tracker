@@ -1,4 +1,4 @@
-import { getData, addData } from "./storage.mjs";
+import { getData, addData, clearData } from "./storage.mjs";
 import { getUserIds } from "./common.mjs";
 
 // DOM elements
@@ -33,8 +33,6 @@ function handleUserChange(event) {
   mainContent.style.display = "block"; // show when user selected
   displayAgenda(currentUser);
 }
-
-// Display agenda for a user in chronological order
 function displayAgenda(userId) {
   const userData = getData(userId);
 
@@ -44,26 +42,80 @@ function displayAgenda(userId) {
     return;
   }
 
-  // Sort topics by startDate (earliest first)
-  const sortedData = userData.slice().sort((a, b) => {
-    // Convert date strings to Date objects for comparison
-    const dateA = new Date(a.startDate);
-    const dateB = new Date(b.startDate);
-    return dateA - dateB; // ascending order
+  let allRevisions = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to midnight
+
+  userData.forEach((item) => {
+    const revisions = calculateRevisionDates(item.startDate);
+
+    revisions.forEach((date) => {
+      const revisionDate = new Date(date);
+      revisionDate.setHours(0, 0, 0, 0);
+
+      // Show only today's or future dates
+      if (revisionDate >= today) {
+        allRevisions.push({
+          topicName: item.topicName,
+          date: revisionDate,
+        });
+      }
+    });
   });
 
-  // Render sorted agenda
+  // Sort dates in order
+  allRevisions.sort((a, b) => a.date - b.date);
+
+  // Show message if all revisions are in the past
+  if (allRevisions.length === 0) {
+    agendaDisplay.innerHTML = "<p>All revisions for this user are in the past.</p>";
+    return;
+  }
+
+  // Render list
   agendaDisplay.innerHTML = `
     <ul>
-      ${sortedData
+      ${allRevisions
         .map(
-          (item) =>
-            `<li>${item.topicName} – ${item.startDate}</li>`
+          (rev) =>
+            `<li>${rev.topicName}, ${formatDateWithSuffix(rev.date)}</li>`
         )
         .join("")}
     </ul>
   `;
 }
+
+// Calculate spaced-repetition dates
+function calculateRevisionDates(startDateStr) {
+  const startDate = new Date(startDateStr);
+
+  // Return future spaced-repetition dates
+  return [
+    new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 7), // +1 week
+    new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()), // +1 month
+    new Date(startDate.getFullYear(), startDate.getMonth() + 3, startDate.getDate()), // +3 months
+    new Date(startDate.getFullYear(), startDate.getMonth() + 6, startDate.getDate()), // +6 months
+    new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate()), // +1 year
+  ];
+}
+
+// Format date with ordinal suffix
+function formatDateWithSuffix(dateInput) {
+  const date = new Date(dateInput);
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const month = date.toLocaleString("default", { month: "long" });
+
+  // Day suffix
+  let suffix = "th";
+  if (day % 10 === 1 && day !== 11) suffix = "st";
+  else if (day % 10 === 2 && day !== 12) suffix = "nd";
+  else if (day % 10 === 3 && day !== 13) suffix = "rd";
+
+  return `${day}${suffix} ${month} ${year}`;
+}
+
+
 
 
 // Populate user dropdown
@@ -79,6 +131,25 @@ function populateUserDropdown() {
     userDropdown.appendChild(option);
   });
 }
+
+// Clear agenda button functionality
+const clearButton = document.getElementById("clear-agenda");
+clearButton.addEventListener("click", () => {
+  if (!currentUser) {
+    alert("Please select a user first!");
+    return;
+  }
+
+  const confirmClear = confirm(
+    "Are you sure you want to delete all topics for this user?"
+  );
+
+  if (!confirmClear) return;
+
+  clearData(currentUser);  // <-- removes user's stored data
+  displayAgenda(currentUser); // refresh agenda display
+  alert("Agenda cleared!");
+});
 
 // Initialize everything once DOM is loaded
 window.onload = function () {
