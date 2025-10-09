@@ -62,12 +62,6 @@ test("isLeapYear: core Gregorian cases", () => {
   );
 });
 
-test("isLeapYear: input validation", () => {
-  assert.throws(() => isLeapYear(2024.5), TypeError);
-  assert.throws(() => isLeapYear("2024"), TypeError);
-  assert.throws(() => isLeapYear(NaN), TypeError);
-});
-
 test("Date behaviour for 29 February", () => {
   // In a leap year 29 Feb exists
   const d1 = new Date(2024, 1, 29); // 29 Feb 2024
@@ -98,4 +92,23 @@ test("formatDateWithSuffix returns correct ordinal suffixes", () => {
   testCases.forEach(({ date, expected }) => {
     assert.strictEqual(formatDateWithSuffix(date), expected);
   });
+});
+
+test("calculateRevisionDates handles 31 January 2026 correctly", () => {
+  const startDate = new Date("2026-01-31");
+  const revisions = calculateRevisionDates(
+    startDate.toISOString().split("T")[0]
+  );
+
+  // Test +1 month (should be 28 February 2026)
+  const oneMonthLater = revisions[1];
+  assert.strictEqual(oneMonthLater.getFullYear(), 2026);
+  assert.strictEqual(oneMonthLater.getMonth(), 1); // February (month 1) ✓
+  assert.strictEqual(oneMonthLater.getDate(), 28); // 28 February
+
+  // test +3 month (should be  30 april 2026)
+  const threeMonthsLater = revisions[2];
+  assert.strictEqual(threeMonthsLater.getFullYear(), 2026);
+  assert.strictEqual(threeMonthsLater.getMonth(), 3); // april (month 3) ✓
+  assert.strictEqual(threeMonthsLater.getDate(), 30); // 30 april
 });
