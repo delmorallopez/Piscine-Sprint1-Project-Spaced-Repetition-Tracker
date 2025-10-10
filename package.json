@@ -4,7 +4,7 @@
   "description": "At Code Your Future, we like to use a learning technique called spaced repetition. The technique involves reviewing a topic over increasing time gaps (e.g. after one week, one month, three months, six months, one year).",
   "main": "index.js",
   "scripts": {
-    "start": "http-server . -c-1 -p 8080",
+    "start": "http-server . -c-1 -p 8081",
     "test": "node --test"
   },
   "repository": {

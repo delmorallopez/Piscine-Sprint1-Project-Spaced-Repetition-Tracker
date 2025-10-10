@@ -24,13 +24,14 @@ function handleUserChange(event) {
   currentUser = event.target.value;
 
   if (!currentUser) {
-    mainContent.style.display = "none"; // hide when no user selected
+    // Hide main content without CSS
+    mainContent.setAttribute("hidden", "");
     agendaDisplay.innerHTML =
       "<p>Please select a user to view their agenda.</p>";
     return;
   }
 
-  mainContent.style.display = "block"; // show when user selected
+  mainContent.removeAttribute("hidden"); // show when user selected
   displayAgenda(currentUser);
 }
 function displayAgenda(userId) {
@@ -68,7 +69,8 @@ function displayAgenda(userId) {
 
   // Show message if all revisions are in the past
   if (allRevisions.length === 0) {
-    agendaDisplay.innerHTML = "<p>All revisions for this user are in the past.</p>";
+    agendaDisplay.innerHTML =
+      "<p>All revisions for this user are in the past.</p>";
     return;
   }
 
@@ -86,25 +88,50 @@ function displayAgenda(userId) {
 }
 
 // Calculate spaced-repetition dates
-function calculateRevisionDates(startDateStr) {
+export function calculateRevisionDates(startDateStr) {
   const startDate = new Date(startDateStr);
 
-  // Return future spaced-repetition dates
+  const addDays = (date, days) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  };
+
+  const addMonths = (date, months) => {
+    const result = new Date(date);
+    const dayOfMonth = result.getDate();
+    result.setMonth(result.getMonth() + months);
+
+    if (result.getDate() !== dayOfMonth) {
+      result.setDate(0); // Go to last day of previous month
+    }
+    return result;
+  };
+
+  const addYears = (date, years) => {
+    const result = new Date(date);
+    result.setFullYear(result.getFullYear() + years);
+    return result;
+  };
+
   return [
-    new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 7), // +1 week
-    new Date(startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate()), // +1 month
-    new Date(startDate.getFullYear(), startDate.getMonth() + 3, startDate.getDate()), // +3 months
-    new Date(startDate.getFullYear(), startDate.getMonth() + 6, startDate.getDate()), // +6 months
-    new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate()), // +1 year
+    addDays(startDate, 7), // +1 week
+    addMonths(startDate, 1), // +1 month
+    addMonths(startDate, 3), // +3 months
+    addMonths(startDate, 6), // +6 months
+    addYears(startDate, 1), // +1 year
   ];
 }
 
 // Format date with ordinal suffix
-function formatDateWithSuffix(dateInput) {
+export function formatDateWithSuffix(dateInput) {
   const date = new Date(dateInput);
   const day = date.getDate();
   const year = date.getFullYear();
-  const month = date.toLocaleString("default", { month: "long" });
+  const month = date.toLocaleString("en-GB", {
+    month: "long",
+    timeZone: "UTC",
+  });
 
   // Day suffix
   let suffix = "th";
@@ -114,9 +141,6 @@ function formatDateWithSuffix(dateInput) {
 
   return `${day}${suffix} ${month} ${year}`;
 }
-
-
-
 
 // Populate user dropdown
 function populateUserDropdown() {
@@ -132,66 +156,68 @@ function populateUserDropdown() {
   });
 }
 
-// Clear agenda button functionality
-const clearButton = document.getElementById("clear-agenda");
-clearButton.addEventListener("click", () => {
-  if (!currentUser) {
-    alert("Please select a user first!");
-    return;
-  }
-
-  const confirmClear = confirm(
-    "Are you sure you want to delete all topics for this user?"
-  );
-
-  if (!confirmClear) return;
-
-  clearData(currentUser);  // <-- removes user's stored data
-  displayAgenda(currentUser); // refresh agenda display
-  alert("Agenda cleared!");
-});
-
 // Initialize everything once DOM is loaded
-window.onload = function () {
-  // Get DOM elements
-  userDropdown = document.getElementById("user-dropdown");
-  agendaDisplay = document.getElementById("agenda-display");
-  addTopicForm = document.getElementById("add-topic-form");
-  topicNameInput = document.getElementById("topic-name");
-  startDateInput = document.getElementById("start-date");
-  mainContent = document.getElementById("main-content");
+if (typeof window !== "undefined") {
+  window.onload = function () {
+    // Get DOM elements
+    userDropdown = document.getElementById("user-dropdown");
+    agendaDisplay = document.getElementById("agenda-display");
+    addTopicForm = document.getElementById("add-topic-form");
+    topicNameInput = document.getElementById("topic-name");
+    startDateInput = document.getElementById("start-date");
+    mainContent = document.getElementById("main-content");
+    mainContent.setAttribute("hidden", "");
 
-  // Populate dropdown & set default date
-  populateUserDropdown();
-  setDefaultDate();
-
-  // Event listeners
-  userDropdown.addEventListener("change", handleUserChange);
-
-  addTopicForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-
-    if (!currentUser) {
-      alert("Please select a user before adding topics.");
-      return;
-    }
-
-    const topicName = topicNameInput.value.trim();
-    const startDate = startDateInput.value;
-
-    if (!topicName || !startDate) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    const newTopic = { topicName, startDate };
-    addData(currentUser, newTopic);
-
-    // Clear form and reset date
-    topicNameInput.value = "";
+    // Populate dropdown & set default date
+    populateUserDropdown();
     setDefaultDate();
 
-    // Refresh agenda
-    displayAgenda(currentUser);
-  });
-};
+    // Event listeners
+    userDropdown.addEventListener("change", handleUserChange);
+
+    addTopicForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      if (!currentUser) {
+        alert("Please select a user before adding topics.");
+        return;
+      }
+
+      const topicName = topicNameInput.value.trim();
+      const startDate = startDateInput.value;
+
+      if (!topicName || !startDate) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      const newTopic = { topicName, startDate };
+      addData(currentUser, newTopic);
+
+      // Clear form and reset date
+      topicNameInput.value = "";
+      setDefaultDate();
+
+      // Refresh agenda
+      displayAgenda(currentUser);
+    });
+    // Clear agenda button functionality
+    const clearButton = document.getElementById("clear-agenda");
+    clearButton.addEventListener("click", () => {
+      if (!currentUser) {
+        alert("Please select a user first!");
+        return;
+      }
+
+      const confirmClear = confirm(
+        "Are you sure you want to delete all topics for this user?"
+      );
+
+      if (!confirmClear) return;
+
+      clearData(currentUser); // <-- removes user's stored data
+      displayAgenda(currentUser); // refresh agenda display
+      alert("Agenda cleared!");
+    });
+  };
+}

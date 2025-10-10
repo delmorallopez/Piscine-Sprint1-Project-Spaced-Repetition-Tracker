@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spaced Repetition Tracker</title>
     <script type="module" src="script.mjs"></script>
-    <style>
-      #main-content {
-        display: none; /* hide until a user is selected */
-      }
-    </style>
   </head>
   <body>
     <header>
@@ -20,7 +15,7 @@
       <section>
         <label for="user-dropdown">Select a User:</label>
         <select id="user-dropdown" name="user-dropdown" size="1">
-          <option value="">No user selected</option>
+          <option>No user selected</option>
         </select>
       </section>
 
@@ -43,7 +38,7 @@
               <input type="date" id="start-date" name="start-date" required />
             </div>
             <button type="submit">Add Topic</button>
-            <button id="clear-agenda">Clear Agenda</button>
+            <button id="clear-agenda" type="button">Clear Agenda</button>
           </form>
         </section>
       </div>
